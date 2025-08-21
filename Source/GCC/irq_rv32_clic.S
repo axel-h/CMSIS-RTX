@@ -183,7 +183,7 @@ SVC_Handler:
 
     /* ecall function parameters are already in the correct registers a0-a4 (see rtx_core_l110.h),
      * so just call the SVC function (address in t0) */
-    jalr    ra, t0, 0   /* Call the SVC function, return value in a0, if applicable */
+    jalr    t0          /* Call the SVC function, return value in a0, if applicable */
     sw      a0, 32(sp)  /* a0 (x10) contains the SVC return value, save to context on the stack */
 
     /* Deccrement Service Call Nesting Counter */
