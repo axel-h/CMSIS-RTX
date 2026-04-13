@@ -995,13 +995,7 @@ static osThreadId_t svcRtxThreadNew (osThreadFunc_t func, void *argument, const 
     thread->mutex_list    = NULL;
     thread->stack_mem     = stack_mem;
     thread->stack_size    = stack_size;
-#if !defined(__riscv)
-    // ARM CM0
-    thread->sp            = (uint32_t)stack_mem + stack_size - 64U;
-#else
-    // RISC-V
     thread->sp            = (uint32_t)stack_mem + stack_size - RTX_CONTEXT_SIZE;
-#endif
     thread->thread_addr   = (uint32_t)func;
   #ifdef RTX_TZ_CONTEXT
     thread->tz_memory     = tz_memory;

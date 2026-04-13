@@ -50,6 +50,9 @@ typedef bool bool_t;
 #warning "Stack overrun checking is not supported!"
 #endif
 
+#define RTX_CONTEXT_REGS        (16U)
+#define RTX_CONTEXT_SIZE        (RTX_CONTEXT_REGS * sizeof(uint32_t))
+
 #define EXCLUSIVE_ACCESS        1
 
 #define OS_TICK_HANDLER         osRtxTick_Handler
@@ -74,7 +77,7 @@ __STATIC_INLINE uint32_t xPSR_InitVal (bool_t privileged, bool_t thumb) {
       psr = CPSR_M_USR;
     }
   }
-  
+
   return psr;
 }
 
