@@ -74,7 +74,7 @@ __STATIC_INLINE uint32_t xPSR_InitVal (bool_t privileged, bool_t thumb) {
       psr = CPSR_M_USR;
     }
   }
-  
+
   return psr;
 }
 
