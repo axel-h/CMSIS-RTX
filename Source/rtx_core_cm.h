@@ -44,6 +44,9 @@ typedef bool bool_t;
 #define TRUE                    ((bool_t)1)
 #endif
 
+#define RTX_CONTEXT_REGS        (16U)
+#define RTX_CONTEXT_SIZE        (RTX_CONTEXT_REGS * sizeof(uint32_t))
+
 #ifndef EXCLUSIVE_ACCESS
 #if   ((defined(__ARM_ARCH_7M__)        && (__ARM_ARCH_7M__        != 0)) || \
        (defined(__ARM_ARCH_7EM__)       && (__ARM_ARCH_7EM__       != 0)) || \
