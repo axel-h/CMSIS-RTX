@@ -30,7 +30,10 @@
 #ifndef RTE_COMPONENTS_H
 #include "RTE_Components.h"
 #endif
+
+#ifdef CMSIS_device_header
 #include CMSIS_device_header
+#endif
 
 #if ((!defined(__ARM_ARCH_6M__))        && \
      (!defined(__ARM_ARCH_7A__))        && \
@@ -38,11 +41,14 @@
      (!defined(__ARM_ARCH_7EM__))       && \
      (!defined(__ARM_ARCH_8M_BASE__))   && \
      (!defined(__ARM_ARCH_8M_MAIN__))   && \
-     (!defined(__ARM_ARCH_8_1M_MAIN__)))
-#error "Unknown Arm Architecture!"
+     (!defined(__ARM_ARCH_8_1M_MAIN__)) && \
+     (!defined(__riscv) || (__riscv_xlen != 32)))
+#error "Unknown Arm/RISC-V Architecture!"
 #endif
 
-#if   (defined(__ARM_ARCH_7A__) && (__ARM_ARCH_7A__ != 0))
+#if   (defined(__riscv))
+#include "rtx_core_rv32_clic.h"
+#elif (defined(__ARM_ARCH_7A__) && (__ARM_ARCH_7A__ != 0))
 #include "rtx_core_ca.h"
 #else
 #include "rtx_core_cm.h"

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2025 Codasip s.r.o. (port to RISC-V)
  * Copyright (c) 2013-2023 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -994,7 +995,13 @@ static osThreadId_t svcRtxThreadNew (osThreadFunc_t func, void *argument, const 
     thread->mutex_list    = NULL;
     thread->stack_mem     = stack_mem;
     thread->stack_size    = stack_size;
+#if !defined(__riscv)
+    // ARM CM0
     thread->sp            = (uint32_t)stack_mem + stack_size - 64U;
+#else
+    // RISC-V
+    thread->sp            = (uint32_t)stack_mem + stack_size - RTX_CONTEXT_SIZE;
+#endif
     thread->thread_addr   = (uint32_t)func;
   #ifdef RTX_TZ_CONTEXT
     thread->tz_memory     = tz_memory;
@@ -1034,6 +1041,9 @@ static osThreadId_t svcRtxThreadNew (osThreadFunc_t func, void *argument, const 
   #endif
 
     // Initialize stack
+#if !defined(__riscv)
+    // ARM CM0
+
     //lint --e{613} false detection: "Possible use of null pointer"
     ptr = (uint32_t *)stack_mem;
     ptr[0] = osRtxStackMagicWord;
@@ -1054,6 +1064,44 @@ static osThreadId_t svcRtxThreadNew (osThreadFunc_t func, void *argument, const 
               );                        // xPSR
     ptr[8]  = (uint32_t)argument;       // R0
     ptr[9]  = (uint32_t)func;           // R1
+
+#else /* __riscv */
+    // RISC-V
+    uint32_t gp, tp;    /* Global pointer and thread pointer */
+
+    //lint --e{613} false detection: "Possible use of null pointer"
+    ptr = (uint32_t *)stack_mem;
+    ptr[0] = osRtxStackMagicWord;
+    if ((osRtxConfig.flags & osRtxConfigStackWatermark) != 0U) {
+      for (n = (stack_size/4U) - RTX_CONTEXT_REGS; n != 0U; n--) {
+         ptr++;
+        *ptr = osRtxStackFillPattern;
+      }
+    }
+    ptr = (uint32_t *)thread->sp;
+    for (n = 0U; n != RTX_CONTEXT_REGS; n++) {
+      ptr[n] = 0U;                      // x1, x3..x31, mcause, mepc
+    }
+
+    /* Read gp and tp registers */
+    __ASM volatile("mv %0, gp"  : "=r" (gp)); /* Register x3 */
+    __ASM volatile("mv %0, tp"  : "=r" (tp)); /* Register x4 */
+
+    ptr[1] = gp;     // Register x3. Each thread uses the same Global Pointer
+    ptr[2] = tp;     // Register x4. Currently each thread (might) use the same Thread Pointer - this may change - ToDo Check
+
+    ptr[RTX_CONTEXT_REGS - 2] = (uint32_t)0x3800000B;     // mcause (CLIC) - set Machine Mode and enable Interrupts for all threads
+    ptr[RTX_CONTEXT_REGS - 1] = (uint32_t)osThreadEntry;  // mpec   - thread start address
+#if 0
+    // ToDo User/Machine mcause setup for tasks
+    ptr[15] = xPSR_InitVal(
+                (bool_t)((attr_bits & osThreadPrivileged) != 0U),
+                (bool_t)(((uint32_t)func & 1U) != 0U)
+              );                        // xPSR
+#endif
+    ptr[RTX_CONTEXT_A0_IDX    ]  = (uint32_t)argument;       // A0
+    ptr[RTX_CONTEXT_A0_IDX + 1]  = (uint32_t)func;           // A1
+#endif /* __riscv */
 
     // Register post ISR processing function
     osRtxInfo.post_process.thread = osRtxThreadPostProcess;

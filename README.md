@@ -5,6 +5,21 @@
 [![Build pack](https://img.shields.io/github/actions/workflow/status/Arm-Software/CMSIS-RTX/pack.yml?logo=arm&logoColor=0091bd&label=Build%20pack)](./.github/workflows/pack.yml)
 
 
+# Codasip RISC-V Port of CMSIS-RTX RTOS implementation
+
+This is a port of ARM's CMSIS-RTX to Codasip's Embedded Cores with the Core Level Interrupt Controller (CLIC) and ACLINT MTimer.
+This requires Codasip RISC-V (with CLIC) Port of **CMSIS_6** from https://github.com/Codasip/CMSIS_6
+
+Supported Codasip cores: L100 series: L110.
+
+## Modified Files
+* `Source/rtx_core_c.h` - Added RISC-V 32-bit to the list of supported architectures and included the RISC-V header file
+* `Source/rtx_thread.c` - Added RISC-V Stack Initialization code to svcRtxThreadNew()
+
+## Additional Files
+* `Source/GCC/irq_rv32_clic.S` - Port of Trap handler, Interrupt Handler, Service Call (SVC) Handler, PendSV_Handler, SysTick_Handler and Context Switch to Codasip's RISC-V (with CLIC) Core (RISC-V assembly code)
+* `Source/rtx_core_rv32_clic.h` - Port of `rtx_core_cm.h` to Codasip's RISC-V (with CLIC) Core, including Service Calls definitions and RTX support functions
+
 # CMSIS-RTX RTOS implementation
 
 **CMSIS-RTX** contains Keil RTX5 RTOS - a real-time operating system for Arm Cortex-M and Cortex-A processor-based devices that implements the [CMSIS-RTOS2 API](https://arm-software.github.io/CMSIS_6/latest/RTOS2/index.html) as its native interface.
